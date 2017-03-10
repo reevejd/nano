@@ -93,10 +93,13 @@ public interface Contexts {
     }
 
     public static String extractContext(Path path) {
+        /*
+         * Translates a file path into a URL context path
+         * e.g. developer/java/duke.js --> /developer/java/duke
+         */
         String fileName = "/" + path.normalize().toString();
         int lastIndexOf = fileName.lastIndexOf(".");
         return fileName.substring(0, lastIndexOf);
-
     }
 
 }
