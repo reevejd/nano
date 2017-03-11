@@ -32,10 +32,21 @@ import javax.script.ScriptException;
 public interface Contexts {
 
     public static List<Path> discoverContexts(Path root) {
+        /* 
+         * Given a root path, this method returns a list of paths that contain
+         * .js files (which assumed to be http handlers)
+         */
+
         List<Path> jars = new ArrayList<>();
-        SimpleFileVisitor visitor = new SimpleFileVisitor<Path>() {
+
+        SimpleFileVisitor visitor = new SimpleFileVisitor<Path>() { // This visitor will visit all files in a file tree
+
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) throws IOException {
+                /*
+                 * The default behaviour of visitFile has been modified so that
+                 * any JavaScript files encountered are added to the "jars" List.
+                 */
                 if (!attributes.isDirectory()) {
                     if (file.toString().endsWith(".js")) {
                         jars.add(file);
@@ -49,7 +60,7 @@ public interface Contexts {
         } catch (IOException ex) {
             throw new IllegalStateException(ex);
         }
-        return jars;
+        return jars; // at this point, jars contains a list of all file paths to JavaScript files within the root
     }
 
     public static HttpHandler instantiate(Path scriptFile) {

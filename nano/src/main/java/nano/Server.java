@@ -28,7 +28,7 @@ public class Server {
         Path root = Paths.get(rootFolder);
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         
-        /* recursively search for valid paths of http handlers, starting at the root */
+        /* search for valid paths of http handlers, starting at the root */
         List<Path> discovered = Contexts.discoverContexts(root);
 
         /* for each HTTPhandler path that was found above, create a context url on the server, and
