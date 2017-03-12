@@ -31,6 +31,10 @@ import javax.script.ScriptException;
  */
 public interface Contexts {
 
+    /*
+     * This interface defines a series of methods that are used to discover and define http contexts.
+     */
+
     public static List<Path> discoverContexts(Path root) {
         /* 
          * Given a root path, this method returns a list of paths that contain
@@ -93,7 +97,11 @@ public interface Contexts {
         return (HttpExchange he) -> {
             final OutputStream responseBody = he.getResponseBody();
             StringBuilder builder = new StringBuilder();
-            ResponseWriter writer = builder::append;
+            ResponseWriter writer = builder::append; /* store a reference to builder's append method, which can be
+            passed to in a request.process call below to write an HTTP response */
+    
+            /* Get the request method (get, post, etc), body, content, request headers, 
+            and a container for the response headers. Then these are passed to the request.process method.  */
             final InputStream requestBody = he.getRequestBody();
             String requestContent;
             try (BufferedReader buffer = new BufferedReader(new InputStreamReader(requestBody))) {
@@ -101,14 +109,19 @@ public interface Contexts {
             }
             Headers requestHeaders = he.getRequestHeaders();
             Headers responseHeaders = he.getResponseHeaders();
-            int statusCode = request.process( // calling request's process method will now execute the associated JavaScript request method
+            int statusCode = request.process( // calling request's process method will now execute the associated JavaScript process method
                 he.getRequestMethod(), 
                 requestHeaders, 
                 responseHeaders, 
                 requestContent, 
                 writer
                 );
-            String content = builder.toString();
+            
+            String content = builder.toString(); /* a reference to builder's append method was 
+            passed to request.process above, the response was written, and the response can now be retrieved from builder */
+            
+            
+            /* update the response headers and body, then flush the output stream to commit/save what was in the buffer */
             he.sendResponseHeaders(statusCode, content.length());
             responseBody.write(content.getBytes());
             responseBody.flush();
@@ -117,17 +130,20 @@ public interface Contexts {
     }
 
     public static HttpContext create(HttpServer server, Path path) {
-        HttpHandler handler = instantiate(path);
-        final String extracted = extractContext(path);
-        HttpContext context = server.createContext(extracted);
-        context.setHandler(handler);
+        /*
+         * creates an http context for a given http server using a path to a JavaScript http handler
+         */
+        HttpHandler handler = instantiate(path); // create the http handler for this path
+        final String extracted = extractContext(path); // get the formatted http context string
+        HttpContext context = server.createContext(extracted); // use the context string to create the context
+        context.setHandler(handler); // assign the handler for this context
         System.out.println("Context registered: " + context.getPath());
         return context;
     }
 
     public static String extractContext(Path path) {
         /*
-         * Translates a file path into a URL context path
+         * Translates a file path into a http context path
          * e.g. developer/java/duke.js --> /developer/java/duke
          */
         String fileName = "/" + path.normalize().toString();

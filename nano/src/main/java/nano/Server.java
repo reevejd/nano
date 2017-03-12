@@ -31,7 +31,7 @@ public class Server {
         /* search for valid paths of http handlers, starting at the root */
         List<Path> discovered = Contexts.discoverContexts(root);
 
-        /* for each HTTPhandler path that was found above, create a context url on the server, and
+        /* for each HTTPhandler path that was found above, create an http context url on the server, and
         instantiate an HTTP handler for that context */
         discovered.stream().forEach(p -> Contexts.create(server, p));
 
