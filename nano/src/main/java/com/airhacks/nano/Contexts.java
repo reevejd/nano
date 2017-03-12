@@ -69,8 +69,8 @@ public interface Contexts {
 
     public static HttpHandler instantiate(Path scriptFile) {
         /*
-         * This is a helper method for the HttpContext class below.
-         * It takes a path to a JavaScript file,
+         * This method creates an HTTP handler.
+         * It takes a path to a JavaScript http handler file, and returns a Java HttpHandler.
          */
 
         
