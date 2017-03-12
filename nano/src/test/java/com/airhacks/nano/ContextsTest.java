@@ -12,6 +12,12 @@ import org.junit.Test;
  */
 public class ContextsTest {
 
+    /*
+     * A test for Contexts.extractContext(). 
+     * Asserts that the leading ".", and file extension are removed,
+     * leaving a proper http context.
+     */
+
     @Test
     public void extractContext() {
         Path path = Paths.get("./src/test/js/hello/duke.js");
