@@ -64,16 +64,32 @@ public interface Contexts {
     }
 
     public static HttpHandler instantiate(Path scriptFile) {
+        /*
+         * This is a helper method for the HttpContext class below.
+         * It takes a path to a JavaScript file,
+         */
+
+        
         ScriptEngineManager sem = new ScriptEngineManager();
-        ScriptEngine engine = sem.getEngineByName("javascript");
+        ScriptEngine engine = sem.getEngineByName("javascript"); // A JavaScript ScriptEngine will be used to evaluate JavaScript code
+
+        /* attempt to run the JavaScript script */
         try {
             engine.eval(new FileReader(scriptFile.toFile()));
         } catch (ScriptException | FileNotFoundException ex) {
             throw new IllegalStateException(ex);
         }
+
+        /* casting the ScriptEngine to an Invocable 
+         * allows the use Invocable's getInterface method,
+         * which maps a Java interface onto a script by matching method names
+         */
         Invocable invocable = (Invocable) engine;
         NanoRequest request = invocable.getInterface(NanoRequest.class);
 
+        /* 
+         * using Java 8's lambda expressions, return an HTTP handler function
+         */
         return (HttpExchange he) -> {
             final OutputStream responseBody = he.getResponseBody();
             StringBuilder builder = new StringBuilder();
@@ -85,7 +101,13 @@ public interface Contexts {
             }
             Headers requestHeaders = he.getRequestHeaders();
             Headers responseHeaders = he.getResponseHeaders();
-            int statusCode = request.process(he.getRequestMethod(), requestHeaders, responseHeaders, requestContent, writer);
+            int statusCode = request.process( // calling request's process method will now execute the associated JavaScript request method
+                he.getRequestMethod(), 
+                requestHeaders, 
+                responseHeaders, 
+                requestContent, 
+                writer
+                );
             String content = builder.toString();
             he.sendResponseHeaders(statusCode, content.length());
             responseBody.write(content.getBytes());
